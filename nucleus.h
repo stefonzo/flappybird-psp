@@ -15,6 +15,7 @@
 #include <cstdio>
 #include <memory>
 #include <malloc.h>
+#include <cmath>
 
 #define LOG_FILE "ms0:/log.txt"
 
@@ -82,7 +83,7 @@ namespace nucleus
 	public:
 		virtual void render(void) = 0;
 		virtual ~quad() = default;
-		void changePosition(ScePspFVector3 *position);
+		void changePosition(ScePspFVector3 *position) {quad_pos.x = position->x, quad_pos.y = position->y, quad_pos.z = position->z;}
 		T __attribute__((aligned(16)))vertices[N_QUAD_VERTICES];
 	protected:
 		unsigned short __attribute__((aligned(16)))vertex_indices[N_QUAD_INDICES];

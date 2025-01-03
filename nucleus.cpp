@@ -44,12 +44,6 @@ namespace nucleus
 	{
 		sceGumDrawArray(GU_TRIANGLES, PSP_PRIMITIVE_VERTICES, n_indices, vertex_indices, vertices);
 	}
-	
-	template <typename T>
-	void quad<T>::changePosition(ScePspFVector3 * pos)
-	{
-		quad_pos.x = pos->x, quad_pos.y = pos->y, quad_pos.z = pos->z;
-	}
 
 	texture_quad::texture_quad(float twidth, float theight, ScePspFVector3 *pos, unsigned int color)
 	{
