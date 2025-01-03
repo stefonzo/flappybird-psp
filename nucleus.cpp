@@ -117,7 +117,7 @@ namespace nucleus
 		pspDebugScreenSetXY(0, 0);
 		if (!data) {
 			texture_data = nullptr;
-			writeToLog("Unable to load texture!");
+			//writeToLog("Unable to load texture!");
 			return;
 		} 
 
@@ -134,7 +134,7 @@ namespace nucleus
 		if (vram) 
 		{
 			swizzled_pixels = (unsigned int *)getStaticVramTexture(pixel_width, pixel_height, GU_PSM_8888);
-			writeToLog("Texture loaded into ram.\n");
+			//writeToLog("Texture loaded into ram.\n");
 		} else
 		{
 			swizzled_pixels = (unsigned int *)memalign(16, pixel_height * pixel_width * 4);
@@ -146,7 +146,7 @@ namespace nucleus
 		texture_data = swizzled_pixels;
 		char buff[256];
 		sprintf(buff, "Texture allocated at: %p", texture_data);
-		writeToLog(buff);
+		//writeToLog(buff);
 		sceKernelDcacheWritebackInvalidateAll();
 	}
 

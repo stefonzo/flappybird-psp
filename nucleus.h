@@ -13,6 +13,7 @@
 #include <string>
 #include <unordered_map>
 #include <cstdio>
+#include <memory>
 #include <malloc.h>
 
 #define LOG_FILE "ms0:/log.txt"

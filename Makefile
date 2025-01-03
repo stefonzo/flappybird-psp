@@ -1,8 +1,8 @@
 TARGET = flappybird
-OBJS = main.o nucleus.o callbacks.o
+OBJS = main.o game.o nucleus.o callbacks.o
 
 INCDIR =
-CFLAGS = -Wall -std=c++17
+CFLAGS = -std=c++17
 CXXFLAGS = $(CLFAGS) -fno-exceptions -fno-rtti
 ASFLAGS = $(CFLAGS)
 

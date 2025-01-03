@@ -1,4 +1,5 @@
 #include "nucleus.h"
+#include "game.h"
 #include "callbacks.h"
 
 #include <pspdisplay.h>
@@ -30,6 +31,8 @@ int main()
 	u64 lastTime;
 	sceRtcGetCurrentTick(&lastTime);
 
+	flappybird::initGame();
+
 
 	while (running)
 	{
@@ -51,6 +54,8 @@ int main()
 		// update and set camera
 		camera.smoothCameraUpdate(dt);
 		camera.setCamera();
+
+		flappybird::renderBird();
 		
 		nucleus::endFrame();
 	}
