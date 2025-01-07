@@ -1,5 +1,5 @@
 TARGET = flappybird
-OBJS = main.o game.o nucleus.o callbacks.o
+OBJS = main.o game.o pipe.o bird.o nucleus.o callbacks.o
 
 INCDIR =
 CFLAGS = -std=c++17

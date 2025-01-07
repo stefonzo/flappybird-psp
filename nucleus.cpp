@@ -50,6 +50,10 @@ namespace nucleus
 		width = twidth, height = theight;
 		quad_pos.x = pos->x, quad_pos.y = pos->y;
 		quad_pos.z = 0.0f;
+		// vertices = (vertex*)memalign(16, sizeof(vertex) * n_vertices);
+		// vertex_indices = (unsigned short*)memalign(16, sizeof(unsigned short) * index_count);
+		vertices = (tex_vertex*)memalign(16, sizeof(tex_vertex) * N_QUAD_VERTICES);
+		vertex_indices = (unsigned short*)memalign(16, sizeof(unsigned short) * N_QUAD_INDICES);
 		
 		tex_vertex t0 = {0.0f, 0.0f, color, 0.0f, -height, 0.0f};
 		tex_vertex t1 = {1.0f, 0.0f, color, width, -height, 0.0f};
@@ -63,7 +67,8 @@ namespace nucleus
 
 	texture_quad::~texture_quad()
 	{
-		
+		free(vertices);
+		free(vertex_indices);
 	}
 
 	void texture_quad::render(void)
@@ -82,6 +87,9 @@ namespace nucleus
 		quad_pos.x = pos->x, quad_pos.y = pos->y;
 		quad_pos.z = 0.0f;
 
+		vertices = (tcnp_vertex*)memalign(16, sizeof(tcnp_vertex) * N_QUAD_VERTICES);
+		vertex_indices = (unsigned short*)memalign(16, sizeof(unsigned short) * N_QUAD_INDICES);
+
 		tcnp_vertex v0 = {0.0f, 0.0f, color, 0.0f, 0.0f, 1.0f, 0.0f, -height, 0.0f};
 		tcnp_vertex v1 = {1.0f, 0.0f, color, 0.0f, 0.0f, 1.0f, width, -height, 0.0f};
 		tcnp_vertex v2 = {1.0f, 1.0f, color, 0.0f, 0.0f, 1.0f, width, 0.0f, 0.0f};
@@ -92,7 +100,11 @@ namespace nucleus
 		sceKernelDcacheWritebackInvalidateAll();  
 	}
 
-	lit_texture_quad::~lit_texture_quad() {}
+	lit_texture_quad::~lit_texture_quad() 
+	{
+		free(vertices);
+		free(vertex_indices);
+	}
 
 	void lit_texture_quad::render(void)
 	{
@@ -341,7 +353,7 @@ namespace nucleus
 		sceGuEnable(GU_DEPTH_TEST); // I don't think we're using the zbuffer for depth testing in our main program loop so this is redundant
 		sceGuFrontFace(GU_CW); // render triangle vertices in a clockwise order
 		sceGuShadeModel(GU_SMOOTH); // how pixels in our triangle will look? (Look at include)
-		sceGuDisable(GU_CULL_FACE); // back facing triangles aren't rendered
+		sceGuEnable(GU_CULL_FACE); // back facing triangles aren't rendered
 		sceGuEnable(GU_TEXTURE_2D); // so we can use 2D textures later
 		sceGuEnable(GU_CLIP_PLANES); // want view clipping
 		sceGuFinish();               // done configuring Gu, tell the Gu to execute list instructions we sent it
@@ -459,11 +471,11 @@ namespace nucleus
 
 	namespace primitive
 	{
-		rectangle::rectangle(float width, float height, unsigned int color, ScePspFVector3 position) 
+		rectangle::rectangle(float width, float height, unsigned int color, ScePspFVector3 *position) 
 		{
 			w = width, h = height;
 			rectangle_color = color;
-			rectangle_pos = position;
+			rectangle_pos.x = position->x, rectangle_pos.y = position->y;
 			rectangle_pos.z = 0.0f;
 
 			// initialize mesh data

@@ -84,9 +84,9 @@ namespace nucleus
 		virtual void render(void) = 0;
 		virtual ~quad() = default;
 		void changePosition(ScePspFVector3 *position) {quad_pos.x = position->x, quad_pos.y = position->y, quad_pos.z = position->z;}
-		T __attribute__((aligned(16)))vertices[N_QUAD_VERTICES];
+		T *vertices;
 	protected:
-		unsigned short __attribute__((aligned(16)))vertex_indices[N_QUAD_INDICES];
+		unsigned short *vertex_indices;
 		float width, height;
 		ScePspFVector3 quad_pos;
 	};
@@ -170,7 +170,7 @@ namespace nucleus
 		class rectangle
 		{
 			public:
-				rectangle(float width, float height, unsigned int color, ScePspFVector3 position);
+				rectangle(float width, float height, unsigned int color, ScePspFVector3 *position);
 				void changePosition(ScePspFVector3 *position);
 				void setWidth(float width) {w = width;}
 				void setHeight(float height) {h = height;}

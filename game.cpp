@@ -10,37 +10,48 @@ namespace flappybird
 	SceCtrlData current_state, previous_state;
     u64 lastTime; // for delta time
     texture_manager game_textures = texture_manager();
-
-    // bird data
-	ScePspFVector3 bird_pos;
-    ScePspFVector3 bird_vel;
-    ScePspFVector3 bird_acc;
-    float bird_mass;
-	std::unique_ptr<texture_quad> bird_quad; 
+    bird player;
+    pipe *pipes; // these pipes are rendered to the screen
+    pipe *pipes_buffer;
 
     void initGame(void)
     {
         setupCallbacks();
 	    initGraphics(gu_list);
 	    initMatrices();
+        initPipes();
 	    setRenderMode(render_mode::NUCLEUS_TEXTURE2D, gu_list);	
         sceCtrlSetSamplingCycle(0);  // Set to fastest sampling rate
         sceCtrlSetSamplingMode(PSP_CTRL_MODE_DIGITAL);  // Use digital mode
 	    sceRtcGetCurrentTick(&lastTime);
 
-        bird_mass = 1.5f;
-        bird_pos = {PSP_SCR_WIDTH / 2, PSP_SCR_HEIGHT / 2, 0.0f};
-        bird_vel = {35.0f, 0.0f, 0.0f};
-        bird_acc = {0.0f, (GRAVITY_ACC/bird_mass), 0.0f};
+        player.pos = {(PSP_SCR_WIDTH / 2.0f), (PSP_SCR_HEIGHT / 2.0f), 0.0f};
+        player.mass = 1.5;
+        player.vel = {35.0f, 0.0f, 0.0f};
+        player.acc = {0.0f, (GRAVITY_ACC/player.mass), 0.0f};
 
         is_paused = game_state::paused;
         game_camera = std::make_unique<camera2D>(0.0f, 0.0f);
         game_textures.addTexture("bird.png");
-        bird_quad = std::make_unique<texture_quad>(
-            game_textures.textures.at("bird.png").getPixelWidth(),
-            game_textures.textures.at("bird.png").getPixelHeight(),
-            &bird_pos,
-            0xFFFFFFFF);
+        player.bird_quad = std::make_unique<texture_quad>(game_textures.textures.at("bird.png").getPixelWidth(), game_textures.textures.at("bird.png").getPixelHeight(), &player.pos, 0xFFFFFFFF);
+    }
+
+    void initPipes(void)
+    {
+        pipes = (pipe*)memalign(16, sizeof(pipe) * N_PIPES);
+        pipes_buffer = (pipe*)memalign(16, sizeof(pipe) * N_PIPES);
+        ScePspFVector3 pipe_pos = {PSP_SCR_WIDTH / 2.0f, PSP_SCR_HEIGHT + 1, 0.0f};
+        for (unsigned int i = 0; i < N_PIPES / 2; i++) // bottom pipes
+        {
+            pipes[i] = pipe(30, 70, 6, &pipe_pos);
+            pipe_pos.x += 120;
+        }
+        pipe_pos = {PSP_SCR_WIDTH / 2.0f, 70.0f, 0.0f};
+        for (unsigned int i = N_PIPES / 2; i < N_PIPES; i++) // top pipes
+        {
+            pipes[i] = pipe(30, 71, 6, &pipe_pos);
+            pipe_pos.x += 120;
+        }
     }
 
     void readController(void)
@@ -56,28 +67,11 @@ namespace flappybird
             }
         }
 
-		if (current_state.Buttons & PSP_CTRL_UP) 
-		{
-			game_camera->updateCameraTarget(game_camera->getCameraPosition().x, game_camera->getCameraPosition().y - CAMERA_CLAMPING);
-		}
-		if (current_state.Buttons & PSP_CTRL_DOWN) 
-		{
-			game_camera->updateCameraTarget(game_camera->getCameraPosition().x, game_camera->getCameraPosition().y + CAMERA_CLAMPING);
-		}
-		if (current_state.Buttons & PSP_CTRL_LEFT) 
-		{
-			game_camera->updateCameraTarget(game_camera->getCameraPosition().x - CAMERA_CLAMPING, game_camera->getCameraPosition().y);
-		}
-		if (current_state.Buttons & PSP_CTRL_RIGHT) 
-		{
-			game_camera->updateCameraTarget(game_camera->getCameraPosition().x + CAMERA_CLAMPING, game_camera->getCameraPosition().y);
-		}
-
         // prevent building up unnecessary velocity when game is paused...
         if (is_paused != game_state::paused) {
             if (isButtonPressed(PSP_CTRL_CROSS))
             {
-                bird_vel.y -= 45.0f;
+                player.vel.y -= 45.0f;
             }
         }
     }
@@ -108,12 +102,12 @@ namespace flappybird
 		    sceGuEnable(GU_BLEND);
 
 		    // clear background to blue
-		    sceGuClearColor(0xFFFE0000);
+		    sceGuClearColor(0xFFEE9999);
 		    sceGuClear(GU_COLOR_BUFFER_BIT | GU_DEPTH_BUFFER_BIT | GU_STENCIL_BUFFER_BIT);
 
 		    readController();
 		    updateGame(dt);
-		    renderGame();
+            renderGame();
 		
 		    endFrame();
 	    }
@@ -121,11 +115,11 @@ namespace flappybird
 
     void updateBird(float dt)
     {   
-        bird_pos.x = bird_pos.x + (bird_vel.x * dt);
-        bird_pos.y = bird_pos.y + ((bird_vel.y * dt) + (0.5f * bird_acc.y * pow(dt, 2.0f)));
-        bird_quad->changePosition(&bird_pos);
-        bird_vel.x += bird_acc.x * dt;
-        bird_vel.y += bird_acc.y * dt;
+        player.pos.x = player.pos.x + (player.vel.x * dt);
+        player.pos.y = player.pos.y + (player.vel.y * dt);
+        player.bird_quad->changePosition(&player.pos);
+        player.vel.x += player.acc.x * dt;
+        player.vel.y += player.acc.y * dt;
     }
 
     void updatePipes(float dt)
@@ -133,37 +127,49 @@ namespace flappybird
 
     }
 
-    void updateGame(float dt)
+    void updateCamera(float dt)
     {
-        if (is_paused != game_state::paused) 
-        {
-            updateBird(dt);
-            updatePipes(dt);
-        }
+        game_camera->updateCameraTarget(player.pos.x - (PSP_SCR_WIDTH / 2.0f), 0.0f); // I have no clue why this works...
         game_camera->smoothCameraUpdate(dt);
 		game_camera->setCamera();
     }
 
+    void updateGame(float dt)
+    {
+        if (is_paused != game_state::paused)
+        {
+            updateBird(dt);
+            updatePipes(dt);
+            updateCamera(dt);
+        }
+    }
+
     void renderBird(void)
     {
-        // bind texture
+        sceGuEnable(GU_TEXTURE_2D);
         game_textures.textures.at("bird.png").bindTexture();
-        bird_quad->render();
+        player.bird_quad->render();
     }
 
     void renderPipes(void)
     {
-
+        sceGuDisable(GU_TEXTURE_2D);
+        for (unsigned int i = 0; i < N_PIPES; i++)
+        {
+            pipes[i].renderPipe();
+        }
     }
 
     void renderGame(void)
     {
-        renderBird();
         renderPipes();
+        renderBird();
     }
 
     void cleanupGame(void)
     {
+        free(pipes);
+        free(pipes_buffer);
         nucleus::termGraphics();
 	    sceKernelExitGame();
     }

@@ -2,8 +2,11 @@
 
 #include "callbacks.h"
 #include "nucleus.h"
+#include "bird.h"
+#include "pipe.h"
 
 #define GRAVITY_ACC 100.0f
+#define N_PIPES 64
 
 using namespace nucleus;
 
@@ -14,19 +17,16 @@ namespace flappybird
         paused, unpaused
     };
     
-    class pipe
-    {   // I'm really lazy so I'm rendering a rectangle over anothr one to create the illusion of a rectangle with a border
-        primitive::rectangle boundary;
-        primitive::rectangle inside;
-    };
     // game functions
     void initGame(void);
+    void initPipes(void);
     void readController(void);
     void updateButtonState(void);
     bool isButtonPressed(unsigned int button);
     void loop(void);
     void updateBird(float dt);
     void updatePipes(float dt);
+    void updateCamera(float dt);
     void updateGame(float dt);
     void renderBird(void); 
     void renderPipes(void);
