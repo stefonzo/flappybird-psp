@@ -12,7 +12,6 @@ namespace flappybird
     texture_manager game_textures = texture_manager();
     bird player;
     pipe *pipes; // these pipes are rendered to the screen
-    pipe *pipes_buffer;
 
     void initGame(void)
     {
@@ -39,17 +38,16 @@ namespace flappybird
     void initPipes(void)
     {
         pipes = (pipe*)memalign(16, sizeof(pipe) * N_PIPES);
-        pipes_buffer = (pipe*)memalign(16, sizeof(pipe) * N_PIPES);
         ScePspFVector3 pipe_pos = {PSP_SCR_WIDTH / 2.0f, PSP_SCR_HEIGHT + 1, 0.0f};
         for (unsigned int i = 0; i < N_PIPES / 2; i++) // bottom pipes
         {
-            pipes[i] = pipe(30, 70, 6, &pipe_pos);
+            pipes[i] = pipe(30, 70, 4, &pipe_pos);
             pipe_pos.x += 120;
         }
         pipe_pos = {PSP_SCR_WIDTH / 2.0f, 70.0f, 0.0f};
         for (unsigned int i = N_PIPES / 2; i < N_PIPES; i++) // top pipes
         {
-            pipes[i] = pipe(30, 71, 6, &pipe_pos);
+            pipes[i] = pipe(30, 71, 4, &pipe_pos);
             pipe_pos.x += 120;
         }
     }
@@ -169,7 +167,6 @@ namespace flappybird
     void cleanupGame(void)
     {
         free(pipes);
-        free(pipes_buffer);
         nucleus::termGraphics();
 	    sceKernelExitGame();
     }

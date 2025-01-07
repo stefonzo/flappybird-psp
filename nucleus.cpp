@@ -403,6 +403,21 @@ namespace nucleus
 		sceDisplayWaitVblankStart();
 	}
 
+	void initRNG(unsigned int seed)
+	{
+		srand(seed);
+	}
+
+	float getNormalizedRandomFloat(void)
+	{
+		return (float)(rand() / RAND_MAX);
+	}
+
+	float getRandomFloat(float a, float b)
+	{
+		return ((a + getNormalizedRandomFloat()) * (b - a));
+	}
+
 	void readController(SceCtrlData ctrl_data, camera2D *game_camera)
 	{
 		sceCtrlReadBufferPositive(&ctrl_data, 1);

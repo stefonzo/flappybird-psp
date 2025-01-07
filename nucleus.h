@@ -16,6 +16,7 @@
 #include <memory>
 #include <malloc.h>
 #include <cmath>
+#include <cstdlib>
 
 #define LOG_FILE "ms0:/log.txt"
 
@@ -158,6 +159,9 @@ namespace nucleus
 	void initGraphics(void *list);
 	void initMatrices(void);
 	void initLighting(void *list);
+	void initRNG(unsigned int seed);
+	float getNormalizedRandomFloat(void);
+	float getRandomFloat(float a, float b);
 	void readController(SceCtrlData ctrl_data, camera2D *game_camera);
 	void startFrame(void *list);
 	void endFrame(void);
@@ -172,6 +176,7 @@ namespace nucleus
 			public:
 				rectangle(float width, float height, unsigned int color, ScePspFVector3 *position);
 				void changePosition(ScePspFVector3 *position);
+				ScePspFVector3 getPosition(void) {return rectangle_pos;}
 				void setWidth(float width) {w = width;}
 				void setHeight(float height) {h = height;}
 				float getWidth(void) {return w;}

@@ -6,7 +6,7 @@
 #include "pipe.h"
 
 #define GRAVITY_ACC 100.0f
-#define N_PIPES 64
+#define N_PIPES 16
 
 using namespace nucleus;
 
@@ -22,7 +22,7 @@ namespace flappybird
     void initPipes(void);
     void readController(void);
     void updateButtonState(void);
-    bool isButtonPressed(unsigned int button);
+    bool isButtonPressed(unsigned int button); // move to nucleus
     void loop(void);
     void updateBird(float dt);
     void updatePipes(float dt);
