@@ -3,6 +3,7 @@
 namespace flappybird {
     pipe::pipe(float width, float height, float padding, ScePspFVector3 *pos)
     {
+        m_padding = padding, m_width = width, m_height = height;
         float padding_offset = padding/2;
         boundary = std::make_unique<nucleus::primitive::rectangle>(width, height, 0xFF000000, pos);
         ScePspFVector3 inside_pos = {pos->x + (padding - padding_offset), pos->y - (padding - padding_offset), pos->z};

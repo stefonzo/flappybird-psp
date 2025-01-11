@@ -9,7 +9,10 @@ namespace flappybird {
                 void setPosition(ScePspFVector3 *pos);
                 ScePspFVector3 getPosition(void);
                 void renderPipe(void);
+                float getWidth(void) {return m_width;}
+                float getHeight(void) {return m_height;}
             private:
+                float m_padding, m_width, m_height;
                 std::unique_ptr<nucleus::primitive::rectangle> boundary;
                 std::unique_ptr<nucleus::primitive::rectangle> inside;
         };

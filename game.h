@@ -7,6 +7,7 @@
 
 #define GRAVITY_ACC 100.0f
 #define N_PIPES 16
+#define RNG_SEED 2
 
 using namespace nucleus;
 
@@ -23,6 +24,8 @@ namespace flappybird
     void readController(void);
     void updateButtonState(void);
     bool isButtonPressed(unsigned int button); // move to nucleus
+    bool detectCollision(bird *b, pipe *p);
+    bool checkBoundaries(void);
     void loop(void);
     void updateBird(float dt);
     void updatePipes(float dt);

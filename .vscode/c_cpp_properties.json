@@ -13,7 +13,7 @@
             "compilerPath": "/usr/local/pspdev/bin/psp-gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "gcc-x86"
+            "intelliSenseMode": "gcc-arm"
         }
     ],
     "version": 4

@@ -12,12 +12,14 @@ namespace flappybird
     texture_manager game_textures = texture_manager();
     bird player;
     pipe *pipes; // these pipes are rendered to the screen
+    char buff[256];
 
     void initGame(void)
     {
         setupCallbacks();
 	    initGraphics(gu_list);
 	    initMatrices();
+        initRNG(RNG_SEED);
         initPipes();
 	    setRenderMode(render_mode::NUCLEUS_TEXTURE2D, gu_list);	
         sceCtrlSetSamplingCycle(0);  // Set to fastest sampling rate
@@ -28,11 +30,14 @@ namespace flappybird
         player.mass = 1.5;
         player.vel = {35.0f, 0.0f, 0.0f};
         player.acc = {0.0f, (GRAVITY_ACC/player.mass), 0.0f};
+        player.alive = true;
 
         is_paused = game_state::paused;
         game_camera = std::make_unique<camera2D>(0.0f, 0.0f);
         game_textures.addTexture("bird.png");
         player.bird_quad = std::make_unique<texture_quad>(game_textures.textures.at("bird.png").getPixelWidth(), game_textures.textures.at("bird.png").getPixelHeight(), &player.pos, 0xFFFFFFFF);
+        player.width = game_textures.textures.at("bird.png").getPixelWidth();
+        player.height = game_textures.textures.at("bird.png").getPixelHeight();
     }
 
     void initPipes(void)
@@ -67,7 +72,7 @@ namespace flappybird
 
         // prevent building up unnecessary velocity when game is paused...
         if (is_paused != game_state::paused) {
-            if (isButtonPressed(PSP_CTRL_CROSS))
+            if (isButtonPressed(PSP_CTRL_CROSS) && (player.alive == true))
             {
                 player.vel.y -= 45.0f;
             }
@@ -83,6 +88,26 @@ namespace flappybird
     bool isButtonPressed(unsigned int button)
     {
         return (current_state.Buttons & button) && !(previous_state.Buttons & button);
+    }
+
+    bool detectCollision(bird *b, pipe *p)
+    {
+        float birdRight = b->pos.x + b->width;
+        float birdTop = b->pos.y + b->height;
+        float pipeRight = p->getPosition().x + p->getWidth();
+        float pipeTop = p->getPosition().y + p->getHeight();
+        bool horizontalCollision = (b->pos.x <= pipeRight && birdRight >= p->getPosition().x);
+        bool verticalCollision = (b->pos.y <= pipeTop && birdTop >= p->getPosition().y);
+        return verticalCollision;
+    }
+
+    bool checkBoundaries(void)
+    {
+        if ((player.pos.y <= (player.height - 5)) || (player.pos.y >= (PSP_SCR_HEIGHT + 5))) { // need to tweak offset values for player hitbox
+            return true;
+        } else {
+            return false;
+        }
     }
 
     void loop(void)
@@ -112,12 +137,28 @@ namespace flappybird
     }
 
     void updateBird(float dt)
-    {   
-        player.pos.x = player.pos.x + (player.vel.x * dt);
-        player.pos.y = player.pos.y + (player.vel.y * dt);
-        player.bird_quad->changePosition(&player.pos);
-        player.vel.x += player.acc.x * dt;
-        player.vel.y += player.acc.y * dt;
+    {  
+        if (!checkBoundaries() && player.alive) {
+            player.pos.x = player.pos.x + (player.vel.x * dt);
+            player.pos.y = player.pos.y + (player.vel.y * dt);
+            player.bird_quad->changePosition(&player.pos);
+            player.vel.x += player.acc.x * dt;
+            player.vel.y += player.acc.y * dt;
+        } else { // make the player fall 
+            player.alive = false;
+        }
+        for (unsigned int i = 0; i < N_PIPES; i++) {
+            if (detectCollision(&player, &pipes[i])) {
+                player.alive = false;
+            }
+        }
+        if (player.alive == false) {
+            player.vel.x = 0.0f;
+            player.pos.x = player.pos.x + (player.vel.x * dt);
+            player.pos.y = player.pos.y + (player.vel.y * dt);
+            player.bird_quad->changePosition(&player.pos);
+            player.vel.y += player.acc.y * dt;
+        }
     }
 
     void updatePipes(float dt)
